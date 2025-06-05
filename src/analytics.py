@@ -15,9 +15,9 @@ spark = SparkSession.builder \
 
 
 
-parent_dir = parent_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-delta_image_results = os.path.join (parent_dir, "/tmp/image_results")
+delta_image_results = os.path.join (parent_dir, "tmp/image_results")
 delta_text_results = os.path.join (parent_dir, "tmp/text_results")
 
 

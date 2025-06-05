@@ -20,10 +20,10 @@ spark = SparkSession.builder \
         .getOrCreate()
 
 
-parent_dir = parent_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-delta_lake_dir = os.path.join (parent_dir, "/tmp/delta-images")
-image_dir = os.path.join (parent_dir, "/data_sample/Images")
+delta_lake_dir = os.path.join (parent_dir, "tmp/delta_images")
+image_dir = os.path.join (parent_dir, "data_sample/Images")
 
 merge_condition = "target.origin = source.origin"
 
@@ -55,7 +55,6 @@ schema = StructType([
 merge_condition = "target.filename = source.filename"
 
 
-# to implement try catch here:
 for i, batch in enumerate(batches):
     try:
         batch_df = spark.createDataFrame(batch, schema=schema)
