@@ -1,0 +1,39 @@
+{
+  "threat_categories": [
+    {
+      "category": "Terrorism",
+      "keywords": [
+        "bomb", "attack", "explosive", "ISIS", "jihad", "suicide mission",
+        "massacre", "terrorist", "IED", "radicalized", "beheading"
+      ]
+    },
+    {
+      "category": "Hacking",
+      "keywords": [
+        "exploit", "zero-day", "payload", "malware", "backdoor", "ransomware",
+        "phishing", "SQL injection", "keylogger", "breach", "brute-force"
+      ]
+    },
+    {
+      "category": "Bullying",
+      "keywords": [
+        "loser", "kill yourself", "no one likes you", "freak", "ugly",
+        "weirdo", "nobody cares", "go die", "worthless", "fat"
+      ]
+    },
+    {
+      "category": "Zero-Day Exploits",
+      "keywords": [
+        "zero-day", "unpatched vulnerability", "unknown exploit", "new CVE",
+        "0day", "zero day", "undisclosed flaw"
+      ]
+    },
+    {
+      "category": "Cyberbullying",
+      "keywords": [
+        "doxing", "swatting", "exposed", "leak", "private info", "threaten",
+        "humiliate", "harass", "blackmail", "revenge porn"
+      ]
+    }
+  ]
+}
