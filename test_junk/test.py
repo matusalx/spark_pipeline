@@ -1,4 +1,6 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import sha2, concat_ws, col, trim, explode
+
 from delta.tables import DeltaTable
 from delta import configure_spark_with_delta_pip
 import os 
@@ -108,6 +110,35 @@ category_mapping_dir = "/Users/vano/Desktop/spark_homowork/category_mapping.json
 df = spark.read.option("multiline", "true").json(category_mapping_dir)
 
 df.write.format("delta").mode("overwrite").save(delta_path_category_mapping)
+
+df = spark.read.format("delta").load(delta_path_category_mapping)
+
+df.show()
+df.printSchema()
+
+
+
+df = spark.read.format("delta").load(delta_path_category_mapping)
+# Flatten category and keywords
+keywords_df = df.selectExpr("explode(threat_categories) as threat") \
+                .select(col("threat.category").alias("category"),
+                        explode(col("threat.keywords")).alias("keyword"))
+
+keyword_category_map = keywords_df.select("keyword", "category") \
+                                   .rdd.map(lambda row: (row["keyword"].lower(), row["category"])) \
+                                   .collect()
+
+ # to try configure_spark_with_delta_pip ??
+
+broadcast_map = spark.sparkContext.broadcast(dict(keyword_category_map))
+
+
+def classify_text(text):
+    text_lower = text.lower()
+    for keyword, category in broadcast_map.value.items():
+        if keyword in text_lower:
+            return category
+    return "Unknown"
 
 spark.stop()
 del spark

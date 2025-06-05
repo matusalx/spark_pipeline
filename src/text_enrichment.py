@@ -20,9 +20,9 @@ spark = SparkSession.builder \
 # Get category mappings
 
 
-parent_dir = parent_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-delta_path_category_mapping = os.path.join (parent_dir, "/tmp/test_category_table")
+delta_path_category_mapping = os.path.join (parent_dir, "tmp/category_table")
 
 df = spark.read.format("delta").load(delta_path_category_mapping)
 # Flatten category and keywords
@@ -49,11 +49,9 @@ def classify_text(text):
 ############################################################
 # read and clasify text
 
-delta_lake_dir = "/Users/vano/Desktop/spark_homowork/tmp/test-delta-table3"
-write_text_results = "/Users/vano/Desktop/spark_homowork/tmp/test_text_results"
 
-delta_lake_dir = os.path.join (parent_dir, "/tmp/delta-table")
-write_text_results = os.path.join (parent_dir, "/tmp/text_results")
+delta_lake_dir = os.path.join (parent_dir, "tmp/delta_text")
+write_text_results = os.path.join (parent_dir, "tmp/text_results")
 
 df = spark.read.format("delta").load(delta_lake_dir)
 

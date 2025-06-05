@@ -22,9 +22,9 @@ spark = SparkSession.builder \
 ############################################################
 # Get category mappings
 
-parent_dir = parent_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-delta_path_category_mapping = os.path.join (parent_dir, "/tmp/test_category_table")
+delta_path_category_mapping = os.path.join (parent_dir, "tmp/category_table")
 
 
 df = spark.read.format("delta").load(delta_path_category_mapping)
@@ -53,7 +53,7 @@ def classify_text(text):
 # read and clasify images
 
 
-delta_lake_dir = os.path.join (parent_dir, "/tmp/delta-table")
+delta_lake_dir = os.path.join (parent_dir, "tmp/delta_images")
 write_image_results = os.path.join (parent_dir, "tmp/image_results")
 
 df = spark.read.format("delta").load(delta_lake_dir)
