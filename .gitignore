@@ -1,3 +1,4 @@
 tmp/*
 data_sample/Images/*
 data_sample/Texts/*
+.DS_Store
