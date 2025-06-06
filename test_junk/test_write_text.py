@@ -5,7 +5,7 @@ import os
 import pytesseract
 from PIL import Image
 import io
-from pyspark.sql.functions import sha2, concat_ws, col, trim
+from pyspark.sql.functions import sha2, concat_ws, col, trim, regexp_replace, lower
 from pyspark.sql.types import StructType, StructField, StringType, BinaryType
 
 
@@ -66,6 +66,24 @@ merge_condition = "target.row_hash = source.row_hash"
 
 # if not exists then crate or else insert/update
 # use partition while creating the table
+spark.sql("DESCRIBE DETAIL delta.`/Users/vano/Desktop/spark_homowork/tmp/delta_text`").select("partitionColumns").show(truncate=False)
+
+deduped_df.filter(df['date'].isNull()).count()
+deduped_df.select('date').distinct().count()
+
+#clear partition column
+deduped_df = deduped_df.withColumn(
+    "date",
+    lower(
+        regexp_replace(
+            trim(col("date")),
+            r"[^a-zA-Z0-9_-]",  # keep only letters, numbers, `_` and `-`
+            "_"                 # replace others with underscore
+        )
+    )
+)
+
+
 delta_table = DeltaTable.forPath(spark, delta_lake_dir)
 
 

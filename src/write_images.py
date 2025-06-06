@@ -56,14 +56,16 @@ merge_condition = "target.filename = source.filename"
 
 
 for i, batch in enumerate(batches):
-    try:
-        batch_df = spark.createDataFrame(batch, schema=schema)
-        if not DeltaTable.isDeltaTable(spark, delta_lake_dir) or 1==1:
+    
+    batch_df = spark.createDataFrame(batch, schema=schema)
+    if not DeltaTable.isDeltaTable(spark, delta_lake_dir) or 1==1:
+        try:
+            batch_df = batch_df.repartition(100)
             batch_df.write.format("delta").mode("append").save(delta_lake_dir)
             print("###############################################")
             print("done writing for the first time iteration: ", i)
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
     else:
         try:
             delta_table = DeltaTable.forPath(spark, delta_lake_dir)
