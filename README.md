@@ -20,8 +20,8 @@ Project execution:
 
 ## DataFlow description
 ### Stage 1
-Using data_retrieval.py data is downloaded in the .cache folder , for example /Users/vano/.cache/kagglehub/datasets
-data is downloaded only at first run and futher runs uses existing data in the cache directory
+Using data_retrieval.py, data is downloaded in the .cache folder , for example /Users/vano/.cache/kagglehub/datasets
+data is downloaded only at first run and further runs uses existing data in the cache directory  
 Data is then copied from .cache folder to the local project folde, relative to the running file location  ( src folder )
 Also category_mapping.json is written to the delta-lake table, category_table
 
@@ -31,12 +31,13 @@ Running write_images.py and write_texts.py will create delta-tables in the proje
 
 ### Stage 3
 
-Running image_enrichment.py and text_enrichment.py will read from delta-lake and categorise data according to the category_table from delta-table.
+Running image_enrichment.py and text_enrichment.py will read from delta-lake and categorise data according to the category_table from delta-table.  
 Categorized data is written in image_results and text_results delta-tables
 
 ### Stage 4
 
-Running analytic.py will read fron both image_results and text_results and will print query results on the console
+Running analytic.py will read fron both image_results and text_results and will print query results on the console  
+Output of analytic.py, such as df.show(), will be logged in app.log file, in the proeject dir
 
 
 
@@ -46,10 +47,3 @@ Data is fetched from the kaggle, using "kagglehub" module.
 - Image dataset name 1: "cassandrapratt/childrens-book-covers-with-captions" (Imagas of book covers)
 - Image dataset name 2: "suvroo/scanned-images-dataset-for-ocr-and-vlm-finetuning" (Images of text files)
 
-    
-
- 
-
-
-
-End of poor documentation for now ...

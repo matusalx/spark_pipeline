@@ -4,6 +4,9 @@ from delta import configure_spark_with_delta_pip
 from pyspark.sql.functions import sha2, concat_ws, col, trim, explode
 from pyspark.sql.types import StructType, StructField, StringType, BinaryType
 import os
+import logging
+import sys
+
 
 spark = SparkSession.builder \
         .master("local[*]") \
@@ -14,12 +17,47 @@ spark = SparkSession.builder \
         .getOrCreate()
 
 
-
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+###################################################
+
+# Create logging that will catch df.show() and prints 
+class StreamToLogger:
+    def __init__(self, logger, level):
+        self.logger = logger
+        self.level = level
+
+    def write(self, message):
+        message = message.strip()
+        if message:
+            self.logger.log(self.level, message)
+
+    def flush(self):
+        pass  # For compatibility
+
+def setup_logging(log_file="app.log"):
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+    logger = logging.getLogger(__name__)
+
+    # Redirect stdout and stderr to logger
+    sys.stdout = StreamToLogger(logger, logging.INFO)
+    sys.stderr = StreamToLogger(logger, logging.ERROR)
+
+    return logger
+
+logger_path = os.path.join(parent_dir,"app.log")
+logger = setup_logging(logger_path)
+
+# Prepare existing tables
 delta_image_results = os.path.join (parent_dir, "tmp/image_results")
 delta_text_results = os.path.join (parent_dir, "tmp/text_results")
-
 
 df_image_results = spark.read.format("delta").load(delta_image_results)
 df_text_results = spark.read.format("delta").load(delta_text_results)
@@ -57,7 +95,6 @@ category_ratio = spark.sql("""
 category_ratio.show()
 
 # use len(title) % 364 as a day, or  len(filename) % 364 to imitate the days
-
 daily_count_of_threats  = spark.sql("""
                     select 
                     "Images" as source,
@@ -82,7 +119,6 @@ daily_count_of_threats  = spark.sql("""
 daily_count_of_threats.show()
 
 # for latest events we use alphabetical order, instead of real timestamps
-
 latest_event_for_category = spark.sql("""
                     select 
                     "Images" as source,
@@ -102,7 +138,6 @@ latest_event_for_category = spark.sql("""
                     """)
 
 latest_event_for_category.show()
-
 
 spark.stop()
 print("Spark stopped")

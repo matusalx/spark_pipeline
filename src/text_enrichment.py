@@ -17,9 +17,8 @@ spark = SparkSession.builder \
         .getOrCreate()
 
 ############################################################
+
 # Get category mappings
-
-
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 delta_path_category_mapping = os.path.join (parent_dir, "tmp/category_table")
@@ -34,8 +33,6 @@ keyword_category_map = keywords_df.select("keyword", "category") \
                                    .rdd.map(lambda row: (row["keyword"].lower(), row["category"])) \
                                    .collect()
 
- # to try configure_spark_with_delta_pip ??
-
 broadcast_map = spark.sparkContext.broadcast(dict(keyword_category_map))
 
 def classify_text(text):
@@ -47,19 +44,15 @@ def classify_text(text):
 
 
 ############################################################
-# read and clasify text
 
-
+# read, clasify text and write results
 delta_lake_dir = os.path.join (parent_dir, "tmp/delta_text")
 write_text_results = os.path.join (parent_dir, "tmp/text_results")
 
 df = spark.read.format("delta").load(delta_lake_dir)
 
-
 text_results = []
-
-for row in df.limit(59).toLocalIterator():
-    # io.BytesIO(row["imagebytes"])
+for row in df.toLocalIterator():
     text = row["title"]
     classified_text = classify_text(text)
     text_results.append((row["title"],classified_text, row["row_hash"]))

@@ -13,7 +13,6 @@ from pyspark.sql.functions import sha2, concat_ws, col, trim, explode
 import sys;print(sys.executable)
 
 # Download the text dataset
-
 path = kagglehub.dataset_download(
     "clmentbisaillon/fake-and-real-news-dataset"
 )
@@ -22,11 +21,11 @@ source_path = path + '/Fake.csv'
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 destination_path = os.path.join(parent_dir, "data_sample/Texts")
 
+# Copy data to project folder
 shutil.copy(source_path, destination_path)
-
 print(f"Dataset copied to: {destination_path}")
 
-# Download the image dataset 1
+# Download the image dataset 1 and handle (ConnectTimeout, ReadTimeout) exceptions
 try:
     path_images = kagglehub.dataset_download(
     "cassandrapratt/childrens-book-covers-with-captions")
@@ -37,11 +36,9 @@ except (ConnectTimeout, ReadTimeout):
     "cassandrapratt/childrens-book-covers-with-captions")
 
 
-
+# Copy data to project folder
 source_path_images = path_images + "/childrens-books"
 destination_path_images = os.path.join (parent_dir, "data_sample/Images")
-
-
 image_names = os.listdir(source_path_images)
 
 for fname in image_names:
@@ -49,10 +46,7 @@ for fname in image_names:
         shutil.copy(os.path.join(source_path_images, fname), destination_path_images)
 
 
-
-# Download the image dataset 2
-
-
+# Download the image dataset 2 and handle (ConnectTimeout, ReadTimeout) exceptions
 try:
     path_images_2 = kagglehub.dataset_download(
     "suvroo/scanned-images-dataset-for-ocr-and-vlm-finetuning")
@@ -62,11 +56,10 @@ except (ConnectTimeout, ReadTimeout):
     path_images_2 = kagglehub.dataset_download(
     "suvroo/scanned-images-dataset-for-ocr-and-vlm-finetuning")
 
+
+# Copy data to project folder
 image_folder_names = ["ADVE", "Email", "Form", "Letter", "Memo", "News", "Note", "Report", "Resume", "Scientific"]
-
-
 source_path_images_2 = [path_images_2 + "/dataset/" + x for x in image_folder_names ]
-
 
 for dir_name in source_path_images_2:
     for x in os.listdir(dir_name):
@@ -75,10 +68,9 @@ for dir_name in source_path_images_2:
 
 print("Finished writing Images")
 
-
 #######################################################
-# Write category mapping into delta lake
 
+# Write category mapping into delta lake
 spark = SparkSession.builder \
         .appName("DeltaLakeExample") \
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
@@ -87,10 +79,8 @@ spark = SparkSession.builder \
         .getOrCreate()
 
 
-
 delta_path_category_mapping = os.path.join(parent_dir, "tmp/category_table")
 category_mapping_dir = os.path.join(parent_dir, "category_mapping.json")
-
 
 df = spark.read.option("multiline", "true").json(category_mapping_dir)
 df.write.format("delta").mode("overwrite").save(delta_path_category_mapping)
