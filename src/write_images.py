@@ -25,9 +25,7 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 delta_lake_dir = os.path.join (parent_dir, "tmp/delta_images")
 image_dir = os.path.join (parent_dir, "data_sample/Images")
 
-merge_condition = "target.origin = source.origin"
-
-
+# Get images from the data folder
 records= []
 for file in os.listdir(image_dir):
     path = os.path.join(image_dir, file)
@@ -36,27 +34,19 @@ for file in os.listdir(image_dir):
             raw = f.read()
             records.append((file, bytearray(raw)))
 
-
+# Create chunks of images of size 100
 batches = [records[i:i+100] for i in range(0, len(records), 100)]
-
-len(batches)
-len(batches[51])
-
-
-
-# df = spark.createDataFrame(records, ["filename", "image_bytes"])
-# df = df.repartition(2000)
-# batches= [batches[0],batches[1]]
 
 schema = StructType([
     StructField("filename", StringType(), False),
     StructField("imagebytes", BinaryType(), False)
 ])
+
+# Merge condition to make update on exsiting records, not to duplicate records
 merge_condition = "target.filename = source.filename"
 
-
+# Currently 1==1 serves for execution only the creation part as update part has memory issues
 for i, batch in enumerate(batches):
-    
     batch_df = spark.createDataFrame(batch, schema=schema)
     if not DeltaTable.isDeltaTable(spark, delta_lake_dir) or 1==1:
         try:
@@ -78,4 +68,5 @@ for i, batch in enumerate(batches):
             print("table merged/update with iteration:", i)
         except Exception as e:
             print(f"An error occurred: {e}")
+            
 spark.stop()

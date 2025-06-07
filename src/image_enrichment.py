@@ -23,7 +23,6 @@ spark = SparkSession.builder \
 # Get category mappings
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 delta_path_category_mapping = os.path.join (parent_dir, "tmp/category_table")
 
 
@@ -37,10 +36,8 @@ keyword_category_map = keywords_df.select("keyword", "category") \
                                    .rdd.map(lambda row: (row["keyword"].lower(), row["category"])) \
                                    .collect()
 
- # to try configure_spark_with_delta_pip ??
-
+# Create mapping function
 broadcast_map = spark.sparkContext.broadcast(dict(keyword_category_map))
-
 def classify_text(text):
     text_lower = text.lower()
     for keyword, category in broadcast_map.value.items():
@@ -50,18 +47,15 @@ def classify_text(text):
 
 
 ############################################################
-# read and clasify images
 
-
+# read and clasify images and write to results
 delta_lake_dir = os.path.join (parent_dir, "tmp/delta_images")
 write_image_results = os.path.join (parent_dir, "tmp/image_results")
 
 df = spark.read.format("delta").load(delta_lake_dir)
-# test = df.first()
-# test["filename"]
-# tesseract_results = []
 
-for row in df.limit(59).toLocalIterator():
+
+for row in df.limit(100).toLocalIterator():
     # io.BytesIO(row["imagebytes"])
     image = Image.open(io.BytesIO(row["imagebytes"]))
     tesseract_text = pytesseract.image_to_string(image)
@@ -71,13 +65,9 @@ for row in df.limit(59).toLocalIterator():
     image_results = spark.createDataFrame([(row["filename"],classified_text)], ["filename", "category"])
     image_results.write.format("delta").mode("overwrite").save(write_image_results)
 
-
-
     print("Finished filename: ", row["filename"])
-
 
 # image_results = spark.createDataFrame(tesseract_results, ["filename", "category"])
 # image_results.write.format("delta").mode("overwrite").save(write_image_results)
 
 spark.stop()
-

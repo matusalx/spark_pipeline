@@ -8,7 +8,6 @@ from pyspark.sql.types import StructType
 import os
 
 
-
 import sys;print(sys.executable)
 
 spark = SparkSession.builder \
@@ -28,15 +27,11 @@ text_dir = os.path.join (parent_dir, "data_sample/Texts/Fake.csv")
 
 df = spark.read.csv(text_dir, header=True, inferSchema=True)
 
+# Create hash and use as an unique key of the table, (This will be used in merge/update statement)
 df_with_hash = df.withColumn("row_hash", sha2(concat_ws("||", *df.columns), 256))
-
-# df_with_hash.show()
-# df.show()
-
 
 deduped_df = df_with_hash.dropDuplicates(["row_hash"])
 print("Number of texts dublicated and removed:", df_with_hash.count() - deduped_df.count())
-
 
 deduped_df.printSchema()
 
@@ -49,19 +44,16 @@ schema = StructType([
 
 # deduped_df = spark.createDataFrame(deduped_df.rdd, schema=schema)
 
-deduped_df.printSchema()
-
-
+# Condition to indentify new incoming records agains the old onces
 merge_condition = "target.row_hash = source.row_hash"
 
 # if not exists then crate or else insert/update
 # use partition while creating the table
-# use hash to reduce date text lenght (long text cannot be used as a partition)
+# use hash on partition column to reduce date text lenght (long text cannot be used as a partition)
 deduped_df = deduped_df.withColumn("date", sha2(col("date"), 256))
 
 # after repartiion there is no warnong for heap space
 deduped_df = deduped_df.repartition(200)
-
 
 if not DeltaTable.isDeltaTable(spark, delta_lake_dir):
     try:
